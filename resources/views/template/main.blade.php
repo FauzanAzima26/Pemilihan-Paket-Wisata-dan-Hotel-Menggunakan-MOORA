@@ -23,6 +23,8 @@
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}" />
     <title>Argon Dashboard 2 Tailwind - {{ config('app.name', 'Laravel') }}</title>
 
+    <base href="{{ url('/') }}/">
+
     <!-- Fonts and icons -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
@@ -35,6 +37,8 @@
 
     <!-- Popper JS -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
+
+    @stack('styles')
 
     <!-- Main Styling -->
     <link href="{{ asset('assets/css/argon-dashboard-tailwind.css?v=1.0.1') }}" rel="stylesheet" />
@@ -327,5 +331,7 @@
 
 <!-- Main Argon JS -->
 <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
+
+@stack('scripts')
 
 </html>
