@@ -10,6 +10,7 @@ use App\Http\Controllers\HasilRekomendasiController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+Route::get('paket/wisata/data', [PaketWisataController::class, 'getData'])->name('paket.wisata.data');
 Route::resource('paket/wisata', PaketWisataController::class)->names('paket.wisata');
 
 Route::resource('hotel', HotelController::class)->names('hotel');

@@ -19,6 +19,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}" />
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}" />
     <title>Argon Dashboard 2 Tailwind - {{ config('app.name', 'Laravel') }}</title>
@@ -37,6 +38,10 @@
 
     <!-- Popper JS -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
+
+    <link rel="stylesheet" href="//cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     @stack('styles')
 
@@ -132,7 +137,8 @@
                                             </div>
                                             <div class="flex flex-col justify-center">
                                                 <h6 class="mb-1 text-sm font-normal leading-normal dark:text-white">
-                                                    <span class="font-semibold">New message</span> from Laur</h6>
+                                                    <span class="font-semibold">New message</span> from Laur
+                                                </h6>
                                                 <p class="mb-0 text-xs leading-tight text-slate-400 dark:text-white/80">
                                                     <i class="mr-1 fa fa-clock"></i>
                                                     13 minutes ago
@@ -152,7 +158,8 @@
                                             </div>
                                             <div class="flex flex-col justify-center">
                                                 <h6 class="mb-1 text-sm font-normal leading-normal dark:text-white">
-                                                    <span class="font-semibold">New album</span> by Travis Scott</h6>
+                                                    <span class="font-semibold">New album</span> by Travis Scott
+                                                </h6>
                                                 <p class="mb-0 text-xs leading-tight text-slate-400 dark:text-white/80">
                                                     <i class="mr-1 fa fa-clock"></i>
                                                     1 day
@@ -168,8 +175,8 @@
                                         <div class="flex py-1">
                                             <div
                                                 class="inline-flex items-center justify-center my-auto mr-4 text-sm text-white transition-all duration-200 ease-nav-brand bg-gradient-to-tl from-slate-600 to-slate-300 h-9 w-9 rounded-xl">
-                                                <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1"
-                                                    xmlns="http://www.w3.org/2000/svg"
+                                                <svg width="12px" height="12px" viewBox="0 0 43 36"
+                                                    version="1.1" xmlns="http://www.w3.org/2000/svg"
                                                     xmlns:xlink="http://www.w3.org/1999/xlink">
                                                     <title>credit-card</title>
                                                     <g stroke="none" stroke-width="1" fill="none"
@@ -324,10 +331,17 @@
         </div>
     </div>
 </body>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="//cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <!-- plugin for charts  -->
 <!-- Plugins -->
 <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}" async></script>
 <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Main Argon JS -->
 <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
