@@ -17,6 +17,7 @@ Route::resource('paket/wisata', PaketWisataController::class)->names('paket.wisa
 Route::get('paket/wisata/data', [HotelController::class, 'getData'])->name('hotel.data');
 Route::resource('hotel', HotelController::class)->names('hotel');
 
+Route::get('bobot/kriteria/data', [BobotKriteriaController::class, 'getData'])->name('bobot.kriteria.data');
 Route::resource('bobot/kriteria', BobotKriteriaController::class)->names('bobot.kriteria');
 
 Route::resource('proses', ProsesController::class)->names('proses');
