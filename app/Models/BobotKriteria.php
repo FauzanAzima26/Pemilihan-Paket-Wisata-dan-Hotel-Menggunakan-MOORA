@@ -8,10 +8,10 @@ class BobotKriteria extends Model
 {
     protected $table = 'kriteria';
 
-    protected $fillable = [
-        'nama',
-        'jenis',
-        'bobot',
-        'tipe',
-    ];
+    protected $fillable = ['nama', 'jenis', 'bobot', 'tipe'];
+
+    public function penilaian()
+    {
+        return $this->hasMany(Penilaian::class);
+    }
 }

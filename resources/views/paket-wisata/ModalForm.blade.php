@@ -20,58 +20,20 @@
                             <div class="invalid-feedback">Nama paket wajib diisi</div>
                         </div>
 
-                        <!-- Harga (C1) -->
-                        <div class="col-md-6 mb-3">
-                            <label for="c1" class="form-label">Harga (Rupiah) <span
-                                    class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" id="c1" name="c1" min="0"
-                                    step="1000" required>
+                        {{-- KRITERIA --}}
+                        @foreach ($kriteria as $k)
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    {{ $k->nama }}
+                                    <span class="badge bg-{{ $k->jenis == 'cost' ? 'danger' : 'success' }}">
+                                        {{ strtoupper($k->jenis) }}
+                                    </span>
+                                </label>
+
+                                <input type="number" step="0.01" class="form-control"
+                                    name="nilai[{{ $k->id }}]" id="kriteria_{{ $k->id }}" required>
                             </div>
-                            <small class="text-muted">Masukkan harga dalam rupiah (contoh: 500000)</small>
-                            <div class="invalid-feedback">Harga wajib diisi</div>
-                        </div>
-
-                        <!-- Fasilitas (C2) -->
-                        <div class="col-md-6 mb-3">
-                            <label for="c2" class="form-label">Fasilitas (Skala 1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="c2" name="c2" min="1"
-                                max="10" step="0.1" required>
-                            <small class="text-muted">Skala 1 (terburuk) sampai 10 (terbaik)</small>
-                            <div class="invalid-feedback">Fasilitas wajib diisi (1-10)</div>
-                        </div>
-
-                        <!-- Durasi (C3) -->
-                        <div class="col-md-6 mb-3">
-                            <label for="c3" class="form-label">Durasi (Jam) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="c3" name="c3" min="1"
-                                max="24" step="0.1" required>
-                            <small class="text-muted">Durasi dalam jam (contoh: 4.5 jam)</small>
-                            <div class="invalid-feedback">Durasi wajib diisi (1-24 jam)</div>
-                        </div>
-
-                        <!-- Rating (C4) -->
-                        <div class="col-md-6 mb-3">
-                            <label for="c4" class="form-label">Rating (Skala 1-5) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="c4" name="c4" min="1"
-                                max="5" step="0.1" required>
-                            <small class="text-muted">Skala 1 (terburuk) sampai 5 (terbaik)</small>
-                            <div class="invalid-feedback">Rating wajib diisi (1-5)</div>
-                        </div>
-
-                        <!-- Akses (C5) -->
-                        <div class="col-md-12 mb-3">
-                            <label for="c5" class="form-label">Akses (Skala 1-10) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="c5" name="c5" min="1"
-                                max="10" step="0.1" required>
-                            <small class="text-muted">Skala 1 (sulit) sampai 10 (sangat mudah)</small>
-                            <div class="invalid-feedback">Akses wajib diisi (1-10)</div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 

@@ -4,7 +4,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Tambah Hotel</h5>
+                <h5 class="modal-title" id="modal-title">Tambah Hotel</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -15,60 +15,36 @@
                 <div class="modal-body">
                     <div class="row">
 
-                        <!-- Nama Hotel -->
+                        {{-- NAMA HOTEL --}}
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Nama Hotel <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="nama" id="nama" required>
+                            <label class="form-label">Nama Hotel</label>
+                            <input type="text" name="nama" id="nama" class="form-control" required>
                         </div>
 
-                        <!-- Harga -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Harga (Rupiah) <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" name="d1" id="d1" min="0"
-                                    step="1000" required>
+                        {{-- KRITERIA --}}
+                        @foreach ($kriteria as $k)
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    {{ $k->nama }}
+                                    <span class="badge bg-{{ $k->jenis == 'cost' ? 'danger' : 'success' }}">
+                                        {{ strtoupper($k->jenis) }}
+                                    </span>
+                                </label>
+
+                                <input type="number" step="0.01" class="form-control"
+                                    name="nilai[{{ $k->id }}]" id="kriteria_{{ $k->id }}" required>
                             </div>
-                        </div>
-
-                        <!-- Fasilitas -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fasilitas (1–10)</label>
-                            <input type="number" class="form-control" name="d2" id="d2" min="1"
-                                max="10" step="0.1" required>
-                        </div>
-
-                        <!-- Lokasi -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Lokasi (1–10)</label>
-                            <input type="number" class="form-control" name="d3" id="d3" min="1"
-                                max="10" step="0.1" required>
-                        </div>
-
-                        <!-- Rating -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Rating (1–5)</label>
-                            <input type="number" class="form-control" name="d4" id="d4" min="1"
-                                max="5" step="0.1" required>
-                        </div>
-
-                        <!-- Pelayanan -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Pelayanan (1–10)</label>
-                            <input type="number" class="form-control" name="d5" id="d5" min="1"
-                                max="10" step="0.1" required>
-                        </div>
+                        @endforeach
 
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        style="background:#6c757d;color:#fff">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Batal
                     </button>
 
-                    <button type="submit" class="btn btn-primary" style="background:#0d6efd;color:#fff">
+                    <button type="submit" class="btn btn-primary">
                         Simpan
                     </button>
                 </div>

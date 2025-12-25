@@ -30,12 +30,7 @@
                                 <thead class="align-bottom bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-white">
                                     <tr>
                                         <th class="px-4 py-3 font-semibold text-left">No</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Paket</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Harga</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Fasilitas</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Durasi</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Rating</th>
-                                        <th class="px-4 py-3 font-semibold text-left">Akses</th>
+                                        <th class="px-4 py-3 font-semibold text-left">Paket Wisata</th>
                                         <th class="px-4 py-3 font-semibold text-center">Aksi</th>
                                     </tr>
                                 </thead>

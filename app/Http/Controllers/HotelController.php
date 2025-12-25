@@ -3,129 +3,146 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hotel;
+use App\Models\Alternatif;
+use App\Models\BobotKriteria;
+use App\Models\Kriteria;
+use App\Models\Penilaian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class HotelController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return view('hotel.index');
+        $kriteria = BobotKriteria::where('tipe', 'hotel')->get();
+
+        return view('hotel.index', compact('kriteria'));
     }
 
+    /**
+     * DataTables
+     */
     public function getData()
     {
-        $wisata = Hotel::query();
+        $data = Hotel::with('alternatif')->select('hotel.*');
 
-        return DataTables::of($wisata)
+        return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('aksi', function ($row) {
-                $updateUrl = route('hotel.update', $row->id);
                 return '
-                <div class="d-flex gap-1">
-                    <button class="btn btn-warning btn-sm editBtn"
-                        data-id="' . $row->id . '"
-                        data-update="' . $updateUrl . '">
-                        <i class="ni ni-ruler-pencil"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm deleteBtn" data-id="' . $row->id . '">
-                        <i class="ni ni-fat-remove"></i>
-                    </button>
-                    </div>
-            ';
+                <button class="btn btn-danger btn-sm deleteBtn" data-id="' . $row->id . '">
+                    Hapus
+                </button>';
             })
             ->rawColumns(['aksi'])
             ->make(true);
     }
 
+    /**
+     * SIMPAN DATA (AJAX)
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama' => 'required',
-            'd1' => 'required',
-            'd2' => 'required',
-            'd3' => 'required',
-            'd4' => 'required',
-            'd5' => 'required',
-        ]);
+        DB::transaction(function () use ($request) {
 
-        $data = $request->all();
+            // 1️⃣ Cari / buat alternatif (ANTI DUPLIKAT)
+            $alternatif = Alternatif::where([
+                'nama' => $request->nama,
+                'tipe' => 'hotel'
+            ])->first();
 
-        // simpan berita
-        $wisata = Hotel::create($data);
+            if (!$alternatif) {
+                $alternatif = Alternatif::create([
+                    'nama' => $request->nama,
+                    'tipe' => 'hotel'
+                ]);
+            }
+
+            // 2️⃣ Simpan hotel
+            Hotel::create([
+                'nama' => $request->nama,
+                'alternatif_id' => $alternatif->id
+            ]);
+
+            // 3️⃣ Simpan / update penilaian
+            foreach ($request->nilai as $kriteria_id => $nilai) {
+                Penilaian::updateOrCreate(
+                    [
+                        'alternatif_id' => $alternatif->id,
+                        'kriteria_id' => $kriteria_id
+                    ],
+                    [
+                        'nilai' => $nilai
+                    ]
+                );
+            }
+        });
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil ditambahkan',
-            'data' => $wisata
+            'message' => 'Hotel berhasil disimpan'
         ]);
     }
 
+    /**
+     * AMBIL DATA UNTUK EDIT MODAL
+     */
     public function show($id)
     {
-        $wisata = Hotel::findOrFail($id);
+        $hotel = Hotel::with('alternatif.penilaian')->findOrFail($id);
+
+        $penilaian = $hotel->alternatif->penilaian
+            ->pluck('nilai', 'kriteria_id');
 
         return response()->json([
             'status' => true,
             'data' => [
-                'nama' => $wisata->nama,
-                'd1' => $wisata->d1,
-                'd2' => $wisata->d2,
-                'd3' => $wisata->d3,
-                'd4' => $wisata->d4,
-                'd5' => $wisata->d5,
+                'nama' => $hotel->nama,
+                'nilai' => $penilaian
             ]
         ]);
     }
 
-    public function update(Request $request, string $id)
+    /**
+     * UPDATE DATA (AJAX)
+     */
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'nama' => 'sometimes|string|max:255',
+        DB::transaction(function () use ($request, $id) {
 
-            // Harga (Rupiah)
-            'd1' => 'sometimes|numeric|min:0',
+            $hotel = Hotel::findOrFail($id);
 
-            // Skor kriteria
-            'd2' => 'sometimes|numeric|min:1|max:10',
-            'd3' => 'sometimes|numeric|min:1|max:24',
-            'd4' => 'sometimes|numeric|min:1|max:5',
-            'd5' => 'sometimes|numeric|min:1|max:10',
-        ]);
+            // Update hotel
+            $hotel->update([
+                'nama' => $request->nama
+            ]);
 
-        $wisata = Hotel::findOrFail($id);
+            // Update alternatif
+            $hotel->alternatif->update([
+                'nama' => $request->nama
+            ]);
 
-        // Ambil hanya field yang dikirim & bukan null
-        $data = array_filter(
-            $request->only([
-                'nama',
-                'd1',
-                'd2',
-                'd3',
-                'd4',
-                'd5',
-            ]),
-            fn($v) => $v !== null
-        );
-
-        // Update data teks
-        $wisata->update($data);
+            // Update penilaian
+            foreach ($request->nilai as $kriteria_id => $nilai) {
+                Penilaian::where('alternatif_id', $hotel->alternatif_id)
+                    ->where('kriteria_id', $kriteria_id)
+                    ->update(['nilai' => $nilai]);
+            }
+        });
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil diperbarui',
-            'data' => $wisata
+            'message' => 'Hotel berhasil diperbarui'
         ]);
     }
 
+    /**
+     * DELETE
+     */
     public function destroy($id)
     {
-        $wisata = Hotel::findOrFail($id);
-
-        $wisata->delete();
+        Hotel::findOrFail($id)->delete();
 
         return response()->json([
             'status' => true,

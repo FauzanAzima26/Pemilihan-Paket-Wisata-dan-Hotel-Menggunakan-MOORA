@@ -3,129 +3,143 @@
 namespace App\Http\Controllers;
 
 use App\Models\PaketWisata;
+use App\Models\Alternatif;
+use App\Models\BobotKriteria;
+use App\Models\Penilaian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class PaketWisataController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return view('paket-wisata.index');
+        $kriteria = BobotKriteria::where('tipe', 'wisata')->get();
+
+        return view('paket-wisata.index', compact('kriteria'));
     }
 
+    /**
+     * DataTables
+     */
     public function getData()
     {
-        $wisata = PaketWisata::query();
+        $data = PaketWisata::with('alternatif')->select('wisata.*');
 
-        return DataTables::of($wisata)
+        return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('aksi', function ($row) {
-                $updateUrl = route('paket.wisata.update', $row->id);
                 return '
-                <div class="d-flex gap-1">
-                    <button class="btn btn-warning btn-sm editBtn"
-                        data-id="' . $row->id . '"
-                        data-update="' . $updateUrl . '">
-                        <i class="ni ni-ruler-pencil"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm deleteBtn" data-id="' . $row->id . '">
-                        <i class="ni ni-fat-remove"></i>
-                    </button>
-                    </div>
-            ';
+                <button class="btn btn-danger btn-sm deleteBtn" data-id="' . $row->id . '">Hapus</button>';
             })
             ->rawColumns(['aksi'])
             ->make(true);
     }
 
+    /**
+     * SIMPAN DATA
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama' => 'required',
-            'c1' => 'required',
-            'c2' => 'required',
-            'c3' => 'required',
-            'c4' => 'required',
-            'c5' => 'required',
-        ]);
+        DB::transaction(function () use ($request) {
 
-        $data = $request->all();
+            // 1️⃣ Cari / buat alternatif (ANTI DUPLIKAT)
+            $alternatif = Alternatif::where([
+                'nama' => $request->nama,
+                'tipe' => 'wisata'
+            ])->first();
 
-        // simpan berita
-        $wisata = PaketWisata::create($data);
+            if (!$alternatif) {
+                $alternatif = Alternatif::create([
+                    'nama' => $request->nama,
+                    'tipe' => 'wisata'
+                ]);
+            }
+
+            // 2️⃣ Simpan paket wisata
+            $wisata = PaketWisata::create([
+                'nama' => $request->nama,
+                'alternatif_id' => $alternatif->id
+            ]);
+
+            // 3️⃣ Simpan / update penilaian
+            foreach ($request->nilai as $kriteria_id => $nilai) {
+                Penilaian::updateOrCreate(
+                    [
+                        'alternatif_id' => $alternatif->id,
+                        'kriteria_id' => $kriteria_id
+                    ],
+                    [
+                        'nilai' => $nilai
+                    ]
+                );
+            }
+        });
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil ditambahkan',
-            'data' => $wisata
+            'message' => 'Wisata berhasil disimpan'
         ]);
     }
 
+    /**
+     * AMBIL DATA UNTUK EDIT
+     */
     public function show($id)
     {
-        $wisata = PaketWisata::findOrFail($id);
+        $wisata = PaketWisata::with('alternatif.penilaian')->findOrFail($id);
+
+        $penilaian = $wisata->alternatif->penilaian
+            ->pluck('nilai', 'kriteria_id');
 
         return response()->json([
             'status' => true,
             'data' => [
                 'nama' => $wisata->nama,
-                'c1' => $wisata->c1,
-                'c2' => $wisata->c2,
-                'c3' => $wisata->c3,
-                'c4' => $wisata->c4,
-                'c5' => $wisata->c5,
+                'nilai' => $penilaian
             ]
         ]);
     }
 
-    public function update(Request $request, string $id)
+    /**
+     * UPDATE
+     */
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'nama' => 'sometimes|string|max:255',
+        DB::transaction(function () use ($request, $id) {
 
-            // Harga (Rupiah)
-            'c1' => 'sometimes|numeric|min:0',
+            $wisata = PaketWisata::findOrFail($id);
 
-            // Skor kriteria
-            'c2' => 'sometimes|numeric|min:1|max:10',
-            'c3' => 'sometimes|numeric|min:1|max:24',
-            'c4' => 'sometimes|numeric|min:1|max:5',
-            'c5' => 'sometimes|numeric|min:1|max:10',
-        ]);
+            // Update wisata
+            $wisata->update([
+                'nama' => $request->nama
+            ]);
 
-        $wisata = PaketWisata::findOrFail($id);
+            // Update alternatif
+            $wisata->alternatif->update([
+                'nama' => $request->nama
+            ]);
 
-        // Ambil hanya field yang dikirim & bukan null
-        $data = array_filter(
-            $request->only([
-                'nama',
-                'c1',
-                'c2',
-                'c3',
-                'c4',
-                'c5',
-            ]),
-            fn($v) => $v !== null
-        );
-
-        // Update data teks
-        $wisata->update($data);
+            // Update penilaian
+            foreach ($request->nilai as $kriteria_id => $nilai) {
+                Penilaian::where('alternatif_id', $wisata->alternatif_id)
+                    ->where('kriteria_id', $kriteria_id)
+                    ->update(['nilai' => $nilai]);
+            }
+        });
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil diperbarui',
-            'data' => $wisata
+            'message' => 'Wisata berhasil diperbarui'
         ]);
     }
 
+    /**
+     * DELETE
+     */
     public function destroy($id)
     {
-        $wisata = PaketWisata::findOrFail($id);
-
-        $wisata->delete();
+        PaketWisata::findOrFail($id)->delete();
 
         return response()->json([
             'status' => true,

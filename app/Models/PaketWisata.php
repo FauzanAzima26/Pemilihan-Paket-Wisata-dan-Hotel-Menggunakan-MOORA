@@ -10,10 +10,14 @@ class PaketWisata extends Model
 
     protected $fillable = [
         'nama',
-        'c1',
-        'c2',
-        'c3',
-        'c4',
-        'c5',
+        'alternatif_id'
     ];
+
+    /**
+     * Relasi ke alternatif
+     */
+    public function alternatif()
+    {
+        return $this->belongsTo(Alternatif::class);
+    }
 }

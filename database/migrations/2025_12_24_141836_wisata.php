@@ -14,11 +14,7 @@ return new class extends Migration
         Schema::create('wisata', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->decimal('c1', 15, 2); // Harga
-            $table->decimal('c2', 5, 2); // Fasilitas
-            $table->decimal('c3', 5, 2); // Durasi
-            $table->decimal('c4', 5, 2); // Rating
-            $table->decimal('c5', 5, 2); // Akses
+            $table->foreignId('alternatif_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -52,69 +52,77 @@ class BobotKriteriaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required',
-            'jenis' => 'required',
-            'bobot' => 'required',
-            'tipe' => 'required',
+            'nama'  => 'required|string',
+            'jenis' => 'required|in:benefit,cost',
+            'bobot' => 'required|numeric|min:0',
+            'tipe'  => 'required|in:hotel,wisata',
         ]);
 
-        $data = $request->all();
+        // Hitung total bobot per tipe
+        $totalBobot = BobotKriteria::where('tipe', $request->tipe)->sum('bobot');
+        $totalBobot += $request->bobot;
 
-        // simpan berita
-        $wisata = BobotKriteria::create($data);
+        if (round($totalBobot, 3) > 1.000) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Total bobot untuk tipe ' . $request->tipe . ' melebihi 1'
+            ], 422);
+        }
+
+        $kriteria = BobotKriteria::create($request->all());
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil ditambahkan',
-            'data' => $wisata
+            'message' => 'Bobot kriteria berhasil ditambahkan',
+            'data' => $kriteria
         ]);
     }
 
     public function show($id)
     {
-        $wisata = BobotKriteria::findOrFail($id);
+        $kriteria = BobotKriteria::findOrFail($id);
 
         return response()->json([
             'status' => true,
             'data' => [
-                'nama' => $wisata->nama,
-                'jenis' => $wisata->jenis,
-                'bobot' => $wisata->bobot,
+                'nama'  => $kriteria->nama,
+                'jenis' => $kriteria->jenis,
+                'bobot' => $kriteria->bobot,
+                'tipe'  => $kriteria->tipe,
             ]
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'sometimes|string|max:255',
-
-            // Jenis: benefit atau cost
-            'jenis' => 'sometimes|string|in:benefit,cost',
-
-            // Bobot: angka >= 0
+            'nama'  => 'sometimes|string|max:255',
+            'jenis' => 'sometimes|in:benefit,cost',
             'bobot' => 'sometimes|numeric|min:0',
         ]);
 
-        $wisata = BobotKriteria::findOrFail($id);
+        $kriteria = BobotKriteria::findOrFail($id);
 
-        // Ambil hanya field yang dikirim & bukan null
-        $data = array_filter(
-            $request->only([
-                'nama',
-                'jenis',
-                'bobot',
-            ]),
-            fn($v) => $v !== null
-        );
+        if ($request->has('bobot')) {
+            $totalBobot = BobotKriteria::where('tipe', $kriteria->tipe)
+                ->where('id', '!=', $kriteria->id)
+                ->sum('bobot');
 
-        // Update data teks
-        $wisata->update($data);
+            $totalBobot += $request->bobot;
+
+            if (round($totalBobot, 3) > 1.000) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Total bobot melebihi 1'
+                ], 422);
+            }
+        }
+
+        $kriteria->update($request->only(['nama', 'jenis', 'bobot']));
 
         return response()->json([
             'status' => true,
-            'message' => 'Data berhasil diperbarui',
-            'data' => $wisata
+            'message' => 'Bobot kriteria berhasil diperbarui'
         ]);
     }
 

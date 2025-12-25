@@ -10,10 +10,14 @@ class Hotel extends Model
 
     protected $fillable = [
         'nama',
-        'd1',
-        'd2',
-        'd3',
-        'd4',
-        'd5',
+        'alternatif_id'
     ];
+
+    /**
+     * Relasi ke alternatif
+     */
+    public function alternatif()
+    {
+        return $this->belongsTo(Alternatif::class);
+    }
 }

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hotel', function (Blueprint $table) {
+        Schema::create('penilaian', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
             $table->foreignId('alternatif_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('kriteria_id')->constrained()->cascadeOnDelete();
+            $table->decimal('nilai', 15, 2);
             $table->timestamps();
         });
     }
